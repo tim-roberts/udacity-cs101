@@ -1,6 +1,30 @@
 def lucky_search(index, ranks, keyword):
-    
-            
+    pages = lookup(index, keyword)
+    if not pages:
+        return None
+    best_page = pages[0]
+    for candidate in pages:
+        if ranks[candidate] > ranks[best_page]:
+            best_page = candidate
+    return best_page
+
+def quicksort_pages(pages, ranks):
+    if not pages or len(pages) <= 1:
+        return pages
+    else:
+        pivot = ranks[pages[0]]  # Find pivot
+        worse = []
+        better = []
+        for page in pages[1:]:
+            if ranks[page] <= pivot:
+                worse.append(page)
+            else:
+                better.append(page)
+        return quicksort_pages(better, ranks) + [pages[0]] + quicksort_pages(worse, ranks)
+
+def ordered_search(index, ranks, keyword):
+    pages = lookup(index, keyword)
+    return quicksort_pages(pages, ranks)
 
 cache = {
    'http://udacity.com/cs101x/urank/index.html': """<html>
@@ -208,14 +232,22 @@ def compute_ranks(graph):
 
 #Here's an example of how your procedure should work on the test site: 
 
-#index, graph = crawl_web('http://udacity.com/cs101x/urank/index.html')
-#ranks = compute_ranks(graph)
+index, graph = crawl_web('http://udacity.com/cs101x/urank/index.html')
+ranks = compute_ranks(graph)
 
-#print lucky_search(index, ranks, 'Hummus')
-#>>> http://udacity.com/cs101x/urank/kathleen.html
+print ordered_search(index, ranks, 'Hummus')
+#>>> ['http://udacity.com/cs101x/urank/kathleen.html',
+#    'http://udacity.com/cs101x/urank/nickel.html',
+#    'http://udacity.com/cs101x/urank/arsenic.html',
+#    'http://udacity.com/cs101x/urank/hummus.html',
+#    'http://udacity.com/cs101x/urank/index.html']
 
-#print lucky_search(index, ranks, 'the')
-#>>> http://udacity.com/cs101x/urank/nickel.html
+print ordered_search(index, ranks, 'the')
+#>>> ['http://udacity.com/cs101x/urank/nickel.html',
+#    'http://udacity.com/cs101x/urank/arsenic.html',
+#    'http://udacity.com/cs101x/urank/hummus.html',
+#    'http://udacity.com/cs101x/urank/index.html']
 
-#print lucky_search(index, ranks, 'babaganoush')
+
+print ordered_search(index, ranks, 'babaganoush')
 #>>> None
